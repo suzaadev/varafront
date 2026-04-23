@@ -4,7 +4,6 @@ import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { AnchorProvider, Program, Idl } from "@coral-xyz/anchor";
 import { getVaultPda } from "@/lib/solana/pda";
-import { PublicKey } from "@solana/web3.js";
 import idl from "@/lib/solana/idl.json";
 
 const PROGRAM_ID_PK = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID!);
