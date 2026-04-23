@@ -4,18 +4,14 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useMerchant } from "@/hooks/useMerchant";
 import { formatSol, shortenAddress, intervalLabel, nextDueLabel } from "@/lib/solana/constants";
 
-const card: React.CSSProperties = { background: "#16161a", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16 };
-const th: React.CSSProperties = { textAlign: "left", fontSize: 11, fontWeight: 500, color: "rgba(240,239,244,0.25)", textTransform: "uppercase", letterSpacing: "0.7px", padding: "0 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" };
-const td: React.CSSProperties = { padding: "14px 20px", fontSize: 13.5, borderBottom: "1px solid rgba(255,255,255,0.04)", verticalAlign: "middle" };
-
 export default function MerchantOverviewPage() {
   const { connected } = useWallet();
   const { merchantSubs, merchantLoading } = useMerchant();
 
   if (!connected) return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: 16, textAlign: "center" }}>
-      <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.5px" }}>Connect your merchant wallet</div>
-      <div style={{ fontSize: 14, color: "rgba(240,239,244,0.4)", maxWidth: 320 }}>Connect the wallet you use as a merchant to view subscribers and revenue</div>
+      <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: "#0F172A" }}>Connect your merchant wallet</div>
+      <div style={{ fontSize: 14, color: "#64748B", maxWidth: 320 }}>Connect the wallet you use as a merchant to view subscribers and revenue</div>
       <WalletMultiButton />
     </div>
   );
@@ -26,47 +22,59 @@ export default function MerchantOverviewPage() {
   const monthly = activeSubs.reduce((a: number, s: any) => a + s.amountLamports.toNumber(), 0);
   const total = merchantSubs.reduce((a: number, s: any) => a + s.cyclesCompleted.toNumber() * s.amountLamports.toNumber(), 0);
 
-  return (
-    <div>
-      <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.8px", marginBottom: 4 }}>Merchant Overview</div>
-      <div style={{ fontSize: 14, color: "rgba(240,239,244,0.4)", marginBottom: 32 }}>Revenue and subscriber activity</div>
+  const stats = [
+    { label: "Active Subscribers", value: activeSubs.length.toString(), color: "#0F172A", bg: "white" },
+    { label: "Monthly Revenue", value: `${formatSol(monthly, 3)} SOL`, color: "#10B981", bg: "white" },
+    { label: "Due Now", value: dueSubs.length.toString(), color: "#5B5CEB", bg: "white" },
+    { label: "Total Collected", value: `${formatSol(total, 3)} SOL`, color: "#0F172A", bg: "white" },
+  ];
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
-        {[
-          { label: "Active Subscribers", value: activeSubs.length.toString(), color: "#f0eff4" },
-          { label: "Monthly Revenue", value: `${formatSol(monthly, 3)} SOL`, color: "#34c97a" },
-          { label: "Due Now", value: dueSubs.length.toString(), color: "#7c6af7" },
-          { label: "Total Collected", value: `${formatSol(total, 3)} SOL`, color: "#f0eff4" },
-        ].map(({ label, value, color }) => (
-          <div key={label} style={{ ...card, padding: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "rgba(240,239,244,0.3)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 8 }}>{label}</div>
-            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.5px", color }}>{value}</div>
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", color: "#0F172A", marginBottom: 4 }}>Merchant Overview</div>
+        <div style={{ fontSize: 14, color: "#64748B" }}>Revenue and subscriber activity</div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }}>
+        {stats.map(({ label, value, color, bg }) => (
+          <div key={label} style={{ background: bg, border: "1px solid #E5E7EB", borderRadius: 16, padding: 22, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 10 }}>{label}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.4px", color }}>{value}</div>
           </div>
         ))}
       </div>
 
-      <div style={card}>
-        <div style={{ padding: "20px 20px 0" }}><div style={{ fontSize: 11, fontWeight: 500, color: "rgba(240,239,244,0.3)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 12 }}>Subscribers</div></div>
+      <div style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", overflow: "hidden" }}>
+        <div style={{ padding: "18px 20px", borderBottom: "1px solid #F1F5F9" }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.6px" }}>Subscribers</div>
+        </div>
         {merchantLoading ? (
-          <div style={{ padding: 32, textAlign: "center", color: "rgba(240,239,244,0.25)", fontSize: 13 }}>Loading...</div>
+          <div style={{ padding: 40, textAlign: "center", color: "#94A3B8", fontSize: 13.5 }}>Loading...</div>
         ) : merchantSubs.length === 0 ? (
-          <div style={{ padding: 48, textAlign: "center", color: "rgba(240,239,244,0.25)", fontSize: 13 }}>No subscribers yet. Users will appear here when they authorize your wallet.</div>
+          <div style={{ padding: 48, textAlign: "center", color: "#94A3B8", fontSize: 13.5 }}>No subscribers yet. Users will appear here when they authorize your wallet.</div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
-            <thead><tr>{["Wallet","Amount","Interval","Next Due","Cycles","Status"].map(h => <th key={h} style={th}>{h}</th>)}</tr></thead>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "#F8FAFC", borderBottom: "1px solid #E5E7EB" }}>
+                {["Wallet","Amount","Interval","Next Due","Cycles","Status"].map(h => (
+                  <th key={h} style={{ textAlign: "left", fontSize: 11, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.6px", padding: "12px 20px" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
               {merchantSubs.map((s: any, i: number) => {
                 const isDue = s.active && s.nextDueAt.toNumber() <= now;
                 return (
-                  <tr key={i}>
-                    <td style={td}><span style={{ fontFamily: "var(--font-dm-mono)", fontSize: 12, color: "rgba(240,239,244,0.5)" }}>{shortenAddress(s.owner.toString())}</span></td>
-                    <td style={td}><span style={{ fontFamily: "var(--font-dm-mono)", fontSize: 13 }}>{formatSol(s.amountLamports.toNumber(), 4)} SOL</span></td>
-                    <td style={td}>{intervalLabel(s.intervalSeconds.toNumber())}</td>
-                    <td style={td}><span style={{ color: "rgba(240,239,244,0.5)", fontSize: 13 }}>{s.active ? nextDueLabel(s.nextDueAt.toNumber()) : "—"}</span></td>
-                    <td style={td}><span style={{ fontFamily: "var(--font-dm-mono)", fontSize: 11, color: "rgba(240,239,244,0.3)" }}>{s.cyclesCompleted.toString()}</span></td>
-                    <td style={td}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 500, background: isDue ? "rgba(240,160,80,0.1)" : s.active ? "rgba(52,201,122,0.1)" : "rgba(255,255,255,0.05)", color: isDue ? "#f0a050" : s.active ? "#34c97a" : "rgba(240,239,244,0.3)" }}>
-                        {(isDue || s.active) && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "currentColor" }} />}
+                  <tr key={i} style={{ borderBottom: "1px solid #F1F5F9" }}>
+                    <td style={{ padding: "16px 20px" }}><span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "#64748B" }}>{shortenAddress(s.owner.toString())}</span></td>
+                    <td style={{ padding: "16px 20px" }}><span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{formatSol(s.amountLamports.toNumber(), 4)} <span style={{ color: "#94A3B8", fontWeight: 400 }}>SOL</span></span></td>
+                    <td style={{ padding: "16px 20px", fontSize: 13, color: "#64748B" }}>{intervalLabel(s.intervalSeconds.toNumber())}</td>
+                    <td style={{ padding: "16px 20px", fontSize: 13, color: "#64748B" }}>{s.active ? nextDueLabel(s.nextDueAt.toNumber()) : "—"}</td>
+                    <td style={{ padding: "16px 20px" }}><span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "#94A3B8" }}>{s.cyclesCompleted.toString()}</span></td>
+                    <td style={{ padding: "16px 20px" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: isDue ? "#FFFBEB" : s.active ? "#F0FDF4" : "#F8FAFC", color: isDue ? "#F59E0B" : s.active ? "#10B981" : "#94A3B8", border: `1px solid ${isDue ? "#FDE68A" : s.active ? "#A7F3D0" : "#E5E7EB"}` }}>
+                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: "currentColor" }} />
                         {isDue ? "Due now" : s.active ? "Active" : "Inactive"}
                       </span>
                     </td>

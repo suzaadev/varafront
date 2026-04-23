@@ -1,11 +1,19 @@
 export function TxPreview({ rows }: { rows: { label: string; value: string; highlight?: "green" | "red" | "amber" }[] }) {
-  const colors = { green: "text-success", red: "text-danger", amber: "text-warning" };
+  const colors = { green: "#10B981", red: "#EF4444", amber: "#F59E0B" };
+  const bgs = { green: "#F0FDF4", red: "#FEF2F2", amber: "#FFFBEB" };
   return (
-    <div className="bg-bg-input border border-border rounded-lg px-4 py-3 my-4 space-y-1.5">
+    <div style={{ background: "#F8FAFC", border: "1px solid #E5E7EB", borderRadius: 12, padding: "14px 16px", margin: "16px 0" }}>
       {rows.map((row, i) => (
-        <div key={i} className="flex justify-between items-center text-sm gap-3">
-          <span className="text-text-secondary">{row.label}</span>
-          <span className={`font-medium text-right ${row.highlight ? colors[row.highlight] : "text-text-primary"}`}>{row.value}</span>
+        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", fontSize: 13, gap: 12, borderBottom: i < rows.length - 1 ? "1px solid #F1F5F9" : "none" }}>
+          <span style={{ color: "#64748B" }}>{row.label}</span>
+          <span style={{
+            fontWeight: 500, textAlign: "right",
+            color: row.highlight ? colors[row.highlight] : "#0F172A",
+            fontSize: row.highlight ? 12 : 13,
+            background: row.highlight ? bgs[row.highlight] : "transparent",
+            padding: row.highlight ? "2px 8px" : "0",
+            borderRadius: row.highlight ? 6 : 0,
+          }}>{row.value}</span>
         </div>
       ))}
     </div>
