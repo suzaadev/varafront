@@ -129,8 +129,10 @@ export default function SubscriptionsPage() {
           <button style={{ flex: 2, background: "linear-gradient(135deg, #5B5CEB, #7A5AF8)", border: "none", color: "white", borderRadius: 10, padding: "10px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(91,92,235,0.3)" }}
             disabled={!form.merchant || !form.amount || parseFloat(form.amount) <= 0 || createSubscription.isPending}
             onClick={async () => {
-              await createSubscription.mutateAsync({ merchantAddress: form.merchant, amountSol: parseFloat(form.amount), intervalSeconds: form.interval, maxCycles: parseInt(form.maxCycles) || 0, seedIndex: Math.floor(Math.random() * 1000000) });
-              setCreateOpen(false); setForm({ merchant: "", amount: "", interval: 2592000, maxCycles: "0" });
+              try {
+                await createSubscription.mutateAsync({ merchantAddress: form.merchant.trim(), amountSol: parseFloat(form.amount), intervalSeconds: form.interval, maxCycles: parseInt(form.maxCycles) || 0, seedIndex: Math.floor(Math.random() * 1000000) });
+                setCreateOpen(false); setForm({ merchant: "", amount: "", interval: 2592000, maxCycles: "0" });
+              } catch(e: any) { alert("Error: " + (e?.message ?? String(e))); }
             }}>{createSubscription.isPending ? "Signing..." : "Sign & Authorize"}</button>
         </div>
       </Modal>
