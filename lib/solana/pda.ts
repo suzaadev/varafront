@@ -14,8 +14,7 @@ export function getSubscriptionPda(
   merchant: PublicKey,
   seedIndex: number
 ): [PublicKey, number] {
-  const idx = Buffer.alloc(8);
-  idx.writeBigUInt64LE(BigInt(seedIndex));
+  const idx = new BN(seedIndex).toArrayLike(Buffer, "le", 8);
   return PublicKey.findProgramAddressSync(
     [
       Buffer.from(SUBSCRIPTION_SEED),
