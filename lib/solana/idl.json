@@ -72,6 +72,9 @@
     },
     {
       "name": "collect_payment",
+      "docs": [
+        "Collect payment. Splits amount between merchant and platform."
+      ],
       "discriminator": [
         180,
         221,
@@ -152,6 +155,37 @@
           "name": "merchant",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "platform",
+          "writable": true
         }
       ],
       "args": []
@@ -311,6 +345,71 @@
       ]
     },
     {
+      "name": "initialize_config",
+      "docs": [
+        "One-time setup. Creates the platform config PDA."
+      ],
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "platform_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "initialize_vault",
       "discriminator": [
         48,
@@ -356,6 +455,65 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "update_config",
+      "docs": [
+        "Authority-only. Update fee rate within allowed range."
+      ],
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_fee_bps",
+          "type": "u16"
+        }
+      ]
     },
     {
       "name": "withdraw",
@@ -411,6 +569,19 @@
   ],
   "accounts": [
     {
+      "name": "PlatformConfig",
+      "discriminator": [
+        160,
+        78,
+        128,
+        0,
+        248,
+        83,
+        230,
+        160
+      ]
+    },
+    {
       "name": "Subscription",
       "discriminator": [
         64,
@@ -438,6 +609,32 @@
     }
   ],
   "events": [
+    {
+      "name": "ConfigInitializedEvent",
+      "discriminator": [
+        22,
+        167,
+        192,
+        50,
+        220,
+        20,
+        10,
+        71
+      ]
+    },
+    {
+      "name": "ConfigUpdatedEvent",
+      "discriminator": [
+        245,
+        158,
+        129,
+        99,
+        60,
+        100,
+        214,
+        220
+      ]
+    },
     {
       "name": "DepositEvent",
       "discriminator": [
@@ -549,9 +746,58 @@
       "code": 6008,
       "name": "Overflow",
       "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidFee",
+      "msg": "Fee must be between 0.1% and 3% (10-300 bps)"
     }
   ],
   "types": [
+    {
+      "name": "ConfigInitializedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "platform_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "new_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
     {
       "name": "CreateSubscriptionParams",
       "type": {
@@ -618,6 +864,14 @@
             "type": "u64"
           },
           {
+            "name": "fee_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
             "name": "cycles_completed",
             "type": "u64"
           },
@@ -632,6 +886,30 @@
           {
             "name": "timestamp",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlatformConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "platform_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

@@ -4,7 +4,16 @@ import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { AnchorProvider, Program, Idl } from "@coral-xyz/anchor";
 import { getVaultPda } from "@/lib/solana/pda";
+import { PublicKey } from "@solana/web3.js";
 import idl from "@/lib/solana/idl.json";
+
+const PROGRAM_ID_PK = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID!);
+const CONFIG_SEED = Buffer.from("platform_config");
+const PLATFORM_WALLET = new PublicKey("6Q1XS5pVa8gEKxrfPXpaAymiZ6pasze8eL47ArXyAopz");
+
+function getConfigPda(): PublicKey {
+  return PublicKey.findProgramAddressSync([CONFIG_SEED], PROGRAM_ID_PK)[0];
+}
 
 export function useMerchant() {
   const wallet = useAnchorWallet();
@@ -33,7 +42,13 @@ export function useMerchant() {
       if (!program || !wallet) throw new Error("Not connected");
       const [vaultPda] = getVaultPda(ownerPubkey);
       await (program.methods as any).collectPayment()
-        .accounts({ subscription: subPda, vault: vaultPda, merchant: wallet.publicKey })
+        .accounts({
+          subscription: subPda,
+          vault: vaultPda,
+          merchant: wallet.publicKey,
+          config: getConfigPda(),
+          platform: PLATFORM_WALLET,
+        })
         .rpc();
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["merchantSubs"] }),
